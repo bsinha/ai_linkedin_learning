@@ -1,23 +1,15 @@
-import os
-from openai import OpenAI
+from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI
+from starlette.responses import FileResponse
+from services.aiReview import generate_review
+app = FastAPI()
 
-# load the .env file it is a must
-from dotenv import load_dotenv
-load_dotenv()
 
-client = OpenAI()
-# defaults to getting the key using os.environ.get("OPENAI_API_KEY")
-# if you saved the key under a different environment variable name, you can do something like:
-#client = OpenAI(
-#   api_key=os.environ.get("OPENAI_API_KEY"),
-#)
+@app.get("/")
+async def read_index():
+    return FileResponse('static/index.html')
 
-completion = client.chat.completions.create(
-  model="gpt-3.5-turbo",
-  messages=[
-    {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
-    {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
-  ]
-)
 
-print(completion.choices[0].message)
+@app.get("/api/gpt")
+async def gpt(review: str):
+    return generate_review(review)
